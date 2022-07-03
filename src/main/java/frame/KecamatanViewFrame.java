@@ -50,10 +50,11 @@ public class KecamatanViewFrame extends JFrame{
             }
             Connection connection = Koneksi.getConnection();
             String keyword = "%" + cariTextField.getText() + "%";
-            String searchSQL = "SELECT * FROM kecamatan WHERE nama like ?";
+            String searchSQL = "SELECT K.*,B.nama AS nama_kabupaten " +"FROM kecamatan K" +"LEFT JOIN kabupaten B ON K.kabupaten_id = B.id" + "WHERE K.nama like ? OR B.nama lika?";
             try {
                 PreparedStatement ps = connection.prepareStatement(searchSQL);
                 ps.setString ( 1, keyword);
+                ps.setString(2, keyword);
                 ResultSet rs = ps.executeQuery();
                 DefaultTableModel dtm = (DefaultTableModel) viewtable.getModel();
                 dtm.setRowCount(0);
@@ -61,6 +62,7 @@ public class KecamatanViewFrame extends JFrame{
                 while (rs.next()){
                     row[0] = rs.getInt( "id");
                     row[1] = rs.getString( "nama");
+                    row[2] = rs.getString("nama_kabupaten");
                     dtm.addRow(row);
                 }
             }catch (SQLException ex) {
@@ -115,22 +117,23 @@ public class KecamatanViewFrame extends JFrame{
     }
 
     public void isiTabel(){
-        Connection c = Koneksi.getConnection();
-        String selectSQl = "SELECT * FROM kecamatan";
+        Connection connection = Koneksi.getConnection();
+        String selectSQl = "SELECT K.*,B.nama AS nama_kabupaten FROM kecamatan K " + "LEFT JOIN kabupaten B ON K.kabupaten_id = B.id";
         try {
-            Statement s = c.createStatement();
+            Statement s = connection.createStatement();
             ResultSet rs = s.executeQuery(selectSQl);
-            String header[] = {"id","Nama kecamatan"};
+            String header[] = {"id","Nama kecamatan", "Nama kabupaten"};
             DefaultTableModel dtm = new DefaultTableModel(header,0);
             viewtable.setModel(dtm);
             viewtable.getColumnModel().getColumn(0).setWidth(32);
             viewtable.getColumnModel().getColumn(0).setMaxWidth(32);
             viewtable.getColumnModel().getColumn(0).setMinWidth(32);
             viewtable.getColumnModel().getColumn(0).setPreferredWidth(32);
-            Object[] row = new Object[2];
+            Object[] row = new Object[3];
             while (rs.next()){
                 row[0] = rs.getInt( "id");
                 row[1] = rs.getString(  "nama");
+                row[2] = rs.getString( "nama_kabupaten");
                 dtm.addRow(row);
             }
         } catch (SQLException e) {
