@@ -14,13 +14,17 @@ public class KecamatanInputFrame extends JFrame {
     private JButton batalButton;
     private JButton simpanButton;
     private JComboBox KabupatenComboBox;
+    private JRadioButton tipeBRadioButton;
+    private JRadioButton tipeARadioButton;
+    private ButtonGroup klasifikasiButtonGroup;
 
     private int id;
-    public void setId(int id){
+
+    public void setId(int id) {
         this.id = id;
     }
 
-    public void isikomponen(){
+    public void isikomponen() {
         Connection connection = Koneksi.getConnection();
         String findSQL = "SELECT * FROM kecamatan WHERE id = ?";
         PreparedStatement ps = null;
@@ -32,35 +36,52 @@ public class KecamatanInputFrame extends JFrame {
                 idTextField.setText(String.valueOf(rs.getInt("id")));
                 namaTextField.setText(rs.getString("nama"));
                 int KabupatenId = rs.getInt("kabupaten_id");
-                for (int i = 0; 1 < KabupatenComboBox.getItemCount(); i++ ){
+                for (int i = 0; 1 < KabupatenComboBox.getItemCount(); i++) {
                     KabupatenComboBox.setSelectedIndex(i);
                     ComboBoxItem item = (ComboBoxItem) KabupatenComboBox.getSelectedItem();
-                    if(KabupatenId == item.getValue()){
+                    if (KabupatenId == item.getValue()) {
                         break;
                     }
                 }
+                String Klasifikasi = rs.getString("Klasifikasi");
+                if (Klasifikasi != null) {
+                    if (Klasifikasi.equals("TIPE A")) {
+                        tipeARadioButton.setSelected(true);
+                    } else if (Klasifikasi.equals("TIPE B")) {
+                        tipeBRadioButton.setSelected(true);
+                    }
+                }
             }
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public KecamatanInputFrame(){
+    public KecamatanInputFrame() {
         batalButton.addActionListener(e -> {
             dispose();
         });
         simpanButton.addActionListener(e -> {
             String nama = namaTextField.getText();
-            if (nama.equals("")){
-                JOptionPane.showMessageDialog( null, "Isi Nama Kabupaten", "Validasi data kosong", JOptionPane.WARNING_MESSAGE);
+            if (nama.equals("")) {
+                JOptionPane.showMessageDialog(null, "Isi Nama Kabupaten", "Validasi data kosong", JOptionPane.WARNING_MESSAGE);
                 namaTextField.requestFocus();
                 return;
             }
             ComboBoxItem item = (ComboBoxItem) KabupatenComboBox.getSelectedItem();
             int KabupatenId = item.getValue();
-            if(KabupatenId == 0){
+            if (KabupatenId == 0) {
                 JOptionPane.showMessageDialog(null, "Pilih Kabupaten", "Validasi Combobox", JOptionPane.WARNING_MESSAGE);
                 KabupatenComboBox.requestFocus();
+                return;
+            }
+            String Klafikasi = "";
+            if (tipeARadioButton.isSelected()) {
+                Klafikasi = "TIPE A";
+            } else if (tipeBRadioButton.isSelected()) {
+                Klafikasi = "TIPE B";
+            } else {
+                JOptionPane.showMessageDialog(null, "Pilih Klasifikasi", "Validasi Data Kosong", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             Connection connection = Koneksi.getConnection();
@@ -71,13 +92,14 @@ public class KecamatanInputFrame extends JFrame {
                     ps = connection.prepareStatement(cekSQL);
                     ps.setString(1, nama);
                     ResultSet rs = ps.executeQuery();
-                    if (rs.next()){
-                        JOptionPane.showMessageDialog( null, "Data sama sudah ada");
+                    if (rs.next()) {
+                        JOptionPane.showMessageDialog(null, "Data sama sudah ada");
                     } else {
-                        String insertSQL = "INSERT INTO kecamatan (id, nama, kabupaten_id) VALUES (NULL, ?, ?)";
+                        String insertSQL = "INSERT INTO kecamatan (id, nama, kabupaten_id, klasifikasi) " + " VALUES (NULL, ?, ?, ?)";
                         ps = connection.prepareStatement(insertSQL);
                         ps.setString(1, nama);
                         ps.setInt(2, KabupatenId);
+                        ps.setString(3, Klafikasi);
                         ps.executeUpdate();
                         dispose();
                     }
@@ -91,16 +113,17 @@ public class KecamatanInputFrame extends JFrame {
                         JOptionPane.showMessageDialog(null, "Data sama sudah ada");
 
                     } else {
-                        String updateSQL = "UPDATE kecamatan SET nama = ?, kabupaten_id = ? WHERE id = ?";
+                        String updateSQL = "UPDATE kecamatan SET nama = ?, kabupaten_id = ?, klasifikasi = ? " + "WHERE id = ?";
                         ps = connection.prepareStatement(updateSQL);
                         ps.setString(1, nama);
                         ps.setInt(2, KabupatenId);
-                        ps.setInt(3, id);
+                        ps.setString(3, Klafikasi);
+                        ps.setInt(4, id);
                         ps.executeUpdate();
                         dispose();
                     }
                 }
-            }catch (SQLException ex) {
+            } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         });
@@ -108,6 +131,7 @@ public class KecamatanInputFrame extends JFrame {
         kustomisasiKomponen();
         init();
     }
+
     public void init() {
         setContentPane(mainpanel);
         setTitle("Input Kecamatan");
@@ -116,19 +140,22 @@ public class KecamatanInputFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    public void kustomisasiKomponen(){
+    public void kustomisasiKomponen() {
         Connection connection = Koneksi.getConnection();
         String selectSQL = "SELECT * FROM kabupaten ORDER BY nama";
         try {
             Statement s = connection.createStatement();
             ResultSet rs = s.executeQuery(selectSQL);
             KabupatenComboBox.addItem(new ComboBoxItem(0, "Pilih Kabupaten"));
-            while (rs.next()){
+            while (rs.next()) {
                 KabupatenComboBox.addItem(new ComboBoxItem(rs.getInt("id"), rs.getString("nama")));
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-    }
 
+    klasifikasiButtonGroup =new ButtonGroup();
+    klasifikasiButtonGroup.add(tipeARadioButton);
+    klasifikasiButtonGroup.add(tipeBRadioButton);
+}
 }
