@@ -3,11 +3,14 @@ package frame;
 import helpers.Koneksi;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.*;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 public class KecamatanViewFrame extends JFrame{
     private JPanel mainpanel;
@@ -58,12 +61,14 @@ public class KecamatanViewFrame extends JFrame{
                 ResultSet rs = ps.executeQuery();
                 DefaultTableModel dtm = (DefaultTableModel) viewtable.getModel();
                 dtm.setRowCount(0);
-                Object[] row = new Object[4];
+                Object[] row = new Object[6];
                 while (rs.next()){
                     row[0] = rs.getInt( "id");
                     row[1] = rs.getString( "nama");
                     row[2] = rs.getString("nama_kabupaten");
                     row[3] = rs.getString("Klasifikasi");
+                    row[4] = rs.getInt("populasi");
+                    row[5] = rs.getDouble("luas");
                     dtm.addRow(row);
                 }
             }catch (SQLException ex) {
@@ -123,19 +128,31 @@ public class KecamatanViewFrame extends JFrame{
         try {
             Statement s = connection.createStatement();
             ResultSet rs = s.executeQuery(selectSQl);
-            String header[] = {"id","Nama kecamatan", "Nama kabupaten", "Klasifikasi"};
+            String header[] = {"id","Nama kecamatan", "Nama kabupaten", "Klasifikasi", "Populasi", "Luas"};
             DefaultTableModel dtm = new DefaultTableModel(header,0);
             viewtable.setModel(dtm);
-            viewtable.getColumnModel().getColumn(0).setWidth(32);
             viewtable.getColumnModel().getColumn(0).setMaxWidth(32);
-            viewtable.getColumnModel().getColumn(0).setMinWidth(32);
-            viewtable.getColumnModel().getColumn(0).setPreferredWidth(32);
-            Object[] row = new Object[4];
+            viewtable.getColumnModel().getColumn(1).setMinWidth(150);
+            viewtable.getColumnModel().getColumn(2).setMinWidth(150);
+
+            DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+            rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+            viewtable.getColumnModel().getColumn(4).setCellRenderer(rightRenderer);
+            viewtable.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
+
+            Object[] row = new Object[6];
             while (rs.next()){
+
+                NumberFormat nf = NumberFormat.getInstance(Locale.US);
+                String rowPopulasi = nf.format(rs.getInt("populasi"));
+                String rowLuas = String.format("%, .2f", rs.getDouble("luas"));
+
                 row[0] = rs.getInt( "id");
                 row[1] = rs.getString(  "nama");
                 row[2] = rs.getString( "nama_kabupaten");
                 row[3] = rs.getString("Klasifikasi");
+                row[4] = rowPopulasi;
+                row[5] = rowLuas;
                 dtm.addRow(row);
             }
         } catch (SQLException e) {
