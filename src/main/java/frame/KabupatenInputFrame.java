@@ -44,22 +44,45 @@ public class KabupatenInputFrame extends JFrame {
         });
         simpanButton.addActionListener(e -> {
             String nama = namatextField.getText();
+            if (nama.equals("")){
+                JOptionPane.showMessageDialog( null, "Isi Nama Kabupaten", "Validasi data kosong", JOptionPane.WARNING_MESSAGE);
+                namatextField.requestFocus();
+                return;
+            }
             Connection connection = Koneksi.getConnection();
             PreparedStatement ps;
             try {
                 if (id == 0) {
-                    String insertSQL = "INSERT INTO kabupaten VALUES (NULL, ?)";
-                    ps = connection.prepareStatement(insertSQL);
+                    String cekSQL = "SELECT * FROM kabupaten WHERE nama = ?";
+                    ps = connection.prepareStatement(cekSQL);
                     ps.setString(1, nama);
-                    ps.executeUpdate();
-                    dispose();
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()){
+                        JOptionPane.showMessageDialog( null, "Data sama sudah ada");
+                    } else {
+                        String insertSQL = "INSERT INTO kabupaten VALUES (NULL, ?)";
+                        ps = connection.prepareStatement(insertSQL);
+                        ps.setString(1, nama);
+                        ps.executeUpdate();
+                        dispose();
+                    }
                 } else {
-                    String updateSQL = "UPDATE kabupaten SET nama = ? WHERE id = ?";
-                    ps = connection.prepareStatement(updateSQL);
+                    String cekSQL = "SELECT * FROM kabupaten WHERE nama = ? AND id != ?";
+                    ps = connection.prepareStatement(cekSQL);
                     ps.setString(1, nama);
                     ps.setInt(2, id);
-                    ps.executeUpdate();
-                    dispose();
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        JOptionPane.showMessageDialog(null, "Data sama sudah ada");
+
+                    } else {
+                        String updateSQL = "UPDATE kabupaten SET nama = ? WHERE id = ?";
+                        ps = connection.prepareStatement(updateSQL);
+                        ps.setString(1, nama);
+                        ps.setInt(2, id);
+                        ps.executeUpdate();
+                        dispose();
+                    }
                 }
             }catch (SQLException ex) {
                 throw new RuntimeException(ex);
