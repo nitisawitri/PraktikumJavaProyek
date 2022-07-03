@@ -9,36 +9,37 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.*;
 
-public class KabupatenViewFrame extends JFrame{
-    private JPanel mainPanel;
-    private JButton cariButton;
+public class KecamatanViewFrame extends JFrame{
+    private JPanel mainpanel;
+    private JPanel caripanel;
+    private JScrollPane viewScrollpanel;
+    private JPanel buttonPanel;
     private JTextField cariTextField;
-    private JTable viewTable;
-    private JButton tambahButton;
+    private JButton cariButton;
+    private JTable viewtable;
+    private JButton tamahButton;
     private JButton ubahButton;
     private JButton hapusButton;
     private JButton batalButton;
     private JButton cetakButton;
     private JButton tutupButton;
-    private JScrollPane viewScrollPanel;
-    private JPanel buttonPanel;
 
-    public KabupatenViewFrame() {
+    public KecamatanViewFrame() {
         ubahButton.addActionListener(e -> {
-            int barisTerpilih = viewTable.getSelectedRow();
+            int barisTerpilih = viewtable.getSelectedRow();
             if(barisTerpilih < 0) {
                 JOptionPane.showMessageDialog(null,"Pilih data dulu");
                 return;
             }
-            TableModel tm = viewTable.getModel();
+            TableModel tm = viewtable.getModel();
             int id = Integer.parseInt(tm.getValueAt(barisTerpilih, 0).toString());
-            KabupatenInputFrame inputFrame = new KabupatenInputFrame();
+            KecamatanInputFrame inputFrame = new KecamatanInputFrame();
             inputFrame.setId(id);
             inputFrame.isikomponen();
             inputFrame.setVisible(true);
         });
-        tambahButton.addActionListener(e -> {
-            KabupatenInputFrame inputFrame = new KabupatenInputFrame();
+        tamahButton.addActionListener(e -> {
+            KecamatanInputFrame inputFrame = new KecamatanInputFrame();
             inputFrame.setVisible(true);
         });
         cariButton.addActionListener(e -> {
@@ -49,37 +50,37 @@ public class KabupatenViewFrame extends JFrame{
             }
             Connection connection = Koneksi.getConnection();
             String keyword = "%" + cariTextField.getText() + "%";
-            String searchSQL = "SELECT * FROM Kabupaten WHERE nama like ?";
+            String searchSQL = "SELECT * FROM kecamatan WHERE nama like ?";
             try {
-            PreparedStatement ps = connection.prepareStatement(searchSQL);
-            ps.setString ( 1, keyword);
-            ResultSet rs = ps.executeQuery();
-            DefaultTableModel dtm = (DefaultTableModel) viewTable.getModel();
-            dtm.setRowCount(0);
-            Object[] row = new Object[2];
-            while (rs.next()){
-                row[0] = rs.getInt( "id");
-                row[1] = rs.getString( "nama");
-                dtm.addRow(row);
+                PreparedStatement ps = connection.prepareStatement(searchSQL);
+                ps.setString ( 1, keyword);
+                ResultSet rs = ps.executeQuery();
+                DefaultTableModel dtm = (DefaultTableModel) viewtable.getModel();
+                dtm.setRowCount(0);
+                Object[] row = new Object[2];
+                while (rs.next()){
+                    row[0] = rs.getInt( "id");
+                    row[1] = rs.getString( "nama");
+                    dtm.addRow(row);
+                }
+            }catch (SQLException ex) {
+                throw new RuntimeException(ex);
             }
-        }catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
 
         });
 
         hapusButton.addActionListener(e -> {
-            int barisTerpilih = viewTable.getSelectedRow();
+            int barisTerpilih = viewtable.getSelectedRow();
             if(barisTerpilih < 0) {
                 JOptionPane.showMessageDialog(null, "pilih data dulu");
                 return;
             }
             int pilihan = JOptionPane.showConfirmDialog(null, "Yakin mau hapus", "konfirmasi Hapus", JOptionPane.YES_NO_OPTION);
             if(pilihan ==0){
-                TableModel tm = viewTable.getModel();
+                TableModel tm = viewtable.getModel();
                 int id = Integer.parseInt(tm.getValueAt(barisTerpilih, 0). toString());
                 Connection connection = Koneksi.getConnection();
-                String deleteSQL = "DELETE FROM Kabupaten WHERE id = ? ";
+                String deleteSQL = "DELETE FROM kecamatan WHERE id = ? ";
                 try {
                     PreparedStatement ps = connection.prepareStatement(deleteSQL);
                     ps.setInt(1, id);
@@ -106,8 +107,8 @@ public class KabupatenViewFrame extends JFrame{
 
     }
     public void init() {
-        setContentPane(mainPanel);
-        setTitle("Data Kabupaten");
+        setContentPane(mainpanel);
+        setTitle("Data Kecamatan");
         pack();
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -115,17 +116,17 @@ public class KabupatenViewFrame extends JFrame{
 
     public void isiTabel(){
         Connection c = Koneksi.getConnection();
-        String selectSQl = "SELECT * FROM kabupaten";
+        String selectSQl = "SELECT * FROM kecamatan";
         try {
             Statement s = c.createStatement();
             ResultSet rs = s.executeQuery(selectSQl);
-            String header[] = {"id","Nama kabupaten"};
+            String header[] = {"id","Nama kecamatan"};
             DefaultTableModel dtm = new DefaultTableModel(header,0);
-            viewTable.setModel(dtm);
-            viewTable.getColumnModel().getColumn(0).setWidth(32);
-            viewTable.getColumnModel().getColumn(0).setMaxWidth(32);
-            viewTable.getColumnModel().getColumn(0).setMinWidth(32);
-            viewTable.getColumnModel().getColumn(0).setPreferredWidth(32);
+            viewtable.setModel(dtm);
+            viewtable.getColumnModel().getColumn(0).setWidth(32);
+            viewtable.getColumnModel().getColumn(0).setMaxWidth(32);
+            viewtable.getColumnModel().getColumn(0).setMinWidth(32);
+            viewtable.getColumnModel().getColumn(0).setPreferredWidth(32);
             Object[] row = new Object[2];
             while (rs.next()){
                 row[0] = rs.getInt( "id");
