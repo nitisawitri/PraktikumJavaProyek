@@ -22,6 +22,10 @@ public class KabupatenViewFrame extends JFrame{
     private JButton tutupButton;
 
     public KabupatenViewFrame() {
+        tambahButton.addActionListener(e -> {
+            KabupatenInputFrame inputFrame = new KabupatenInputFrame();
+            inputFrame.setVisible(true);
+        });
         cariButton.addActionListener(e -> {
             Connection connection = Koneksi.getConnection();
             String keyword = "%" + cariTextField.getText() + "%";
@@ -90,14 +94,15 @@ public class KabupatenViewFrame extends JFrame{
     }
 
     public void isiTabel(){
-        Connection connection = Koneksi.getConnection();
-        String selectSQl = "SELECT * FROM Kabupaten";
+        Connection c = Koneksi.getConnection();
+        String selectSQl = "SELECT * FROM kabupaten";
         try {
-            Statement s = connection.createStatement();
+            Statement s = c.createStatement();
             ResultSet rs = s.executeQuery(selectSQl);
             String header[] = {"id","Nama kabupaten"};
             DefaultTableModel dtm = new DefaultTableModel(header,0);
             viewTable.setModel(dtm);
+            viewTable.getColumnModel().getColumn(0).setPreferredWidth(32);
             Object[] row = new Object[2];
             while (rs.next()){
                 row[0] = rs.getInt( "id");
